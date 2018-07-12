@@ -33,10 +33,7 @@ public:
 	virtual void SecondaryFire() override;
 
 private:
-	UFUNCTION()
 	inline bool DetectObject();
-
-	UFUNCTION()
 	inline void DropAttachedObject();
 
 	UPROPERTY()
