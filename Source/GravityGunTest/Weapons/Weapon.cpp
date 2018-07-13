@@ -1,9 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Weapon.h"
 
-
-// Sets default values
 AWeapon::AWeapon() :
 	mMesh(nullptr)
 {
@@ -12,14 +8,12 @@ AWeapon::AWeapon() :
 
 }
 
-// Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -33,4 +27,3 @@ void AWeapon::Fire()
 void AWeapon::SecondaryFire()
 {
 }
-

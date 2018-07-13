@@ -1,14 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "GravityGun.h"
 #include "Components/SkeletalMeshComponent.h"
 
 #include "DrawDebugHelpers.h"
 #include "EngineGlobals.h"
+#include "GameSingleton/GameSingleton.h"
+#include "Events/GlobalEventHandler.h"
 
-const float AGravityGun::LAUNCH_IMPULSE_MAGNITUDE = 2400.0f;
+const float AGravityGun::LAUNCH_IMPULSE_MAGNITUDE = 3000.0f;
+const float AGravityGun::GRAVITY_GUN_RANGE = 1500.0f;
+const float AGravityGun::LEVITATE_TO_LERP_ALPHA = 0.3f;
 
-// Sets default values
 AGravityGun::AGravityGun() :
 	mIsGravityActive(false), mGravitizedObject(nullptr)
 {
@@ -16,39 +17,47 @@ AGravityGun::AGravityGun() :
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
 void AGravityGun::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-// Called every frame
 void AGravityGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// If an object is attached and is not at the focus of the gun, levitate it to the gun.
+	if (mIsGravityActive && (mGravitizedObject->GetComponentLocation() != mMesh->GetSocketLocation("GravityFocus")))
+	{
+		mGravitizedObject->SetWorldLocation(FMath::Lerp(mGravitizedObject->GetComponentLocation(), mMesh->GetSocketLocation("GravityFocus"), LEVITATE_TO_LERP_ALPHA));
+	}
 }
 
 void AGravityGun::Fire()
 {
+	// If the gravity is active (object is attached), drop it. Else detect if an object is in range.
 	if (mIsGravityActive)
 	{
 		DropAttachedObject();
+	}
+	else
+	{
+		DetectObject();
+	}
+
+	// Apply Impulse to captured object.
+	if (mGravitizedObject)
+	{
 		Cast<UPrimitiveComponent>(mGravitizedObject)->AddImpulse(LAUNCH_IMPULSE_MAGNITUDE * mMesh->GetRightVector(), NAME_None, true);
 		mGravitizedObject = nullptr;
 	}
 
-	else
-	{
-		if(DetectObject())
-		{
-			Cast<UPrimitiveComponent>(mGravitizedObject)->AddImpulse(LAUNCH_IMPULSE_MAGNITUDE * mMesh->GetRightVector(), NAME_None, true);
-			mGravitizedObject = nullptr;
-		}
-	}
+	AGameSingleton::GetEventHandler()->OnLaunchObject.Broadcast(this);
 }
 
 void AGravityGun::SecondaryFire()
 {
+	// If an object is attached, drop it. Else, detect an object in range and grab onto it.
 	if (mIsGravityActive)
 	{
 		DropAttachedObject();
@@ -58,9 +67,12 @@ void AGravityGun::SecondaryFire()
 	{
 		if (DetectObject())
 		{
-			mGravitizedObject->AttachToComponent(mMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true), "GravityFocus");
+			// Attach the object keeping the world transform of the object and shut down physics on it.
+			mGravitizedObject->AttachToComponent(mMesh, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true), "GravityFocus");
 			Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(false);
+
 			mIsGravityActive = true;
+			AGameSingleton::GetEventHandler()->OnGravitizeObject.Broadcast(this);
 		}
 	}
 }
@@ -69,19 +81,14 @@ inline bool AGravityGun::DetectObject()
 {
 	if (!mIsGravityActive)
 	{
-		FVector start = mMesh->GetSocketLocation("Ammo");
-		FVector end = start + (1000 * mMesh->GetRightVector());
+		// Start and End points of the LineTrace
+		FVector start = mMesh->GetSocketLocation("Ammo");					
+		FVector end = start + (GRAVITY_GUN_RANGE * mMesh->GetRightVector());
 
-#if UE_BUILD_DEVELOPMENT
-		DrawDebugLine(GetWorld(), start, end, FColor::Red, false, 2, 0, 1.0f);
-#endif
-
-		FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("gravityGunTrace")), true, this);
-		traceParams.bTraceComplex = true;
-		traceParams.bTraceAsyncScene = true;
-		traceParams.bReturnPhysicalMaterial = false;
+		FCollisionQueryParams traceParams = FCollisionQueryParams("GravityGunTrace", true, this);
 		FHitResult hitResult(ForceInit);
 
+		// Check if an actor is hit. If the hit actor can simulate physics, assign it as the gravitized object and return true.
 		if (GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECollisionChannel::ECC_Visibility, traceParams))
 		{
 			USceneComponent* hitComponent = hitResult.Actor.Get()->GetRootComponent();
@@ -98,7 +105,9 @@ inline bool AGravityGun::DetectObject()
 
 inline void AGravityGun::DropAttachedObject()
 {
+	// Detach the object preserving the current world transform and turn the physics back on.
 	mGravitizedObject->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
 	Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(true);
 	mIsGravityActive = false;
+	AGameSingleton::GetEventHandler()->OnDropObject.Broadcast(this);
 }

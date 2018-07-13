@@ -27,17 +27,17 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/**
-		Implementable method for the primary fire functionality of the weapon.
-		Typically called when the user presses the left click.
+	*	Implementable method for the primary fire functionality of the weapon.
+	*	Typically called when the user presses the left click.
 	*/
 	virtual void Fire();
 
 	/**
-		Implementable method for the secondary fire functionality of the weapon or used to aim down iron-sights.
-		This action is typically called with the right click.
+	*	Implementable method for the secondary fire functionality of the weapon or used to aim down iron-sights.
+	*	This action is typically called with the right click.
 	*/
 	virtual void SecondaryFire();
 
 	UPROPERTY(BlueprintReadWrite, Category="Weapon Parent Class", meta = (DisplayName = "Weapon Mesh"))
-	USkeletalMeshComponent* mMesh;		/*< Reference to the mesh of the gun. Currently being set by the derived blueprint class. */
+	USkeletalMeshComponent* mMesh;		/**< Reference to the mesh of the gun. Currently being set by the derived blueprint class. */
 };
