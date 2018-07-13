@@ -39,17 +39,34 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Gravity Gun")
 	virtual void SecondaryFire() override;
 
+	/**
+	*	Sends out a line trace to detect interactable objects.
+	*	@return boolean true if a suitable Actor is in range (hit by the line trace).
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Gravity Gun")
+	bool DetectObject();
+
+	/**
+	*	Drops the attached object, if there is one. Also mutates the mIsGravityActive to false.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Gravity Gun")
+	void DropAttachedObject();
+
 private:
-	inline bool DetectObject();
-	inline void DropAttachedObject();
 
 	UPROPERTY()
 	bool mIsGravityActive;							/**< Boolean indicates whether an object is attached the gravity gun or not. */
 
 	UPROPERTY()
 	USceneComponent* mGravitizedObject;				/**< Reference to the scene component of the object attached to the gun. */
-													  
-	static const float LAUNCH_IMPULSE_MAGNITUDE;	/**< The magnitude of the impulse that launches the gravitized object away from the gun. */
-	static const float GRAVITY_GUN_RANGE;			/**< The range that the gun can operate under. */
-	static const float LEVITATE_TO_LERP_ALPHA;		/**< Holds the alpha value to use when interpolating a gravitized object's location. */
+	
+protected:
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Launch Impulse Magnitude"))
+	float LAUNCH_IMPULSE_MAGNITUDE;	/**< The magnitude of the impulse that launches the gravitized object away from the gun. */
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Gravity Gun Range"))
+	float GRAVITY_GUN_RANGE;			/**< The range that the gun can operate under. */
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta=(DisplayName="Levitate Lerp Alpha"))
+	float LEVITATE_TO_LERP_ALPHA;		/**< Holds the alpha value to use when interpolating a gravitized object's location. */
 };

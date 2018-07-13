@@ -6,10 +6,6 @@
 #include "GameSingleton/GameSingleton.h"
 #include "Events/GlobalEventHandler.h"
 
-const float AGravityGun::LAUNCH_IMPULSE_MAGNITUDE = 3000.0f;
-const float AGravityGun::GRAVITY_GUN_RANGE = 1500.0f;
-const float AGravityGun::LEVITATE_TO_LERP_ALPHA = 0.3f;
-
 AGravityGun::AGravityGun() :
 	mIsGravityActive(false), mGravitizedObject(nullptr)
 {
@@ -77,7 +73,7 @@ void AGravityGun::SecondaryFire()
 	}
 }
 
-inline bool AGravityGun::DetectObject()
+bool AGravityGun::DetectObject()
 {
 	if (!mIsGravityActive)
 	{
@@ -103,11 +99,14 @@ inline bool AGravityGun::DetectObject()
 	return false;
 }
 
-inline void AGravityGun::DropAttachedObject()
+void AGravityGun::DropAttachedObject()
 {
-	// Detach the object preserving the current world transform and turn the physics back on.
-	mGravitizedObject->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
-	Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(true);
-	mIsGravityActive = false;
-	AGameSingleton::GetEventHandler()->OnDropObject.Broadcast(this);
+	if (mGravitizedObject)
+	{
+		// Detach the object preserving the current world transform and turn the physics back on.
+		mGravitizedObject->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
+		Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(true);
+		mIsGravityActive = false;
+		AGameSingleton::GetEventHandler()->OnDropObject.Broadcast(this);
+	}
 }

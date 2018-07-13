@@ -53,6 +53,5 @@ void AFXManager::OnGravityGunGravitizeObject(AGravityGun* gravityGun)
 
 void AFXManager::OnGravityGunDropObject(AGravityGun * gravityGun)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Called Drop Object"));
 	mActiveParticle->DestroyComponent();
 }
