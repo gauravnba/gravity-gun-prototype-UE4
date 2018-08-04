@@ -30,13 +30,13 @@ public:
 	/**
 	*	Launches objects with a powerful beam. Works on both picked up objects as well as ones on the ground.
 	*/
-	UFUNCTION(BlueprintCallable, Category="Gravity Gun")
+	UFUNCTION(Category="Gravity Gun")
 	virtual void Fire() override;
 
 	/**
 	*	Pulls the object that is in the cross-hairs to the weapon. If an object is already attached, drops it.
 	*/
-	UFUNCTION(BlueprintCallable, Category = "Gravity Gun")
+	UFUNCTION(Category = "Gravity Gun")
 	virtual void SecondaryFire() override;
 
 	/**
@@ -62,11 +62,26 @@ private:
 	
 protected:
 	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Launch Impulse Magnitude"))
-	float LAUNCH_IMPULSE_MAGNITUDE;	/**< The magnitude of the impulse that launches the gravitized object away from the gun. */
+	float LAUNCH_IMPULSE_MAGNITUDE;							/**< The magnitude of the impulse that launches the gravitized object away from the gun. */
 
 	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Gravity Gun Range"))
-	float GRAVITY_GUN_RANGE;			/**< The range that the gun can operate under. */
+	float GRAVITY_GUN_RANGE;								/**< The range that the gun can operate under. */
 
 	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta=(DisplayName="Levitate Lerp Alpha"))
-	float LEVITATE_TO_LERP_ALPHA;		/**< Holds the alpha value to use when interpolating a gravitized object's location. */
+	float LEVITATE_TO_LERP_ALPHA;							/**< Holds the alpha value to use when interpolating a gravitized object's location. */
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Launch Object Particle Effect"))
+	class UParticleSystem* mGravityGunLaunchObjectParticle; /**< The particle effect reference to be played when object is launched. */
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Gravity Active Particle Effect"))
+	class UParticleSystem* mGravityGunActiveParticle;		/**< Particle reference to the effect when the gravity is active. */
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Launch Object Audio"))
+	class USoundBase* mGravityGunLaunchObjectSound;			/**< Sound to be played when object is launched. */
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Gravitize Object Audio"))
+	class USoundBase* mGravityGunGravitizeObjectSound;		/**< Sound played when object is grabbed. */
+
+	UPROPERTY()
+	class UParticleSystemComponent* mActiveParticle;		/**< Reference to the gravitize particle being played. */
 };

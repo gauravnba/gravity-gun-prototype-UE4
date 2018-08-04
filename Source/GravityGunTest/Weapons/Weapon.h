@@ -30,14 +30,16 @@ public:
 	*	Implementable method for the primary fire functionality of the weapon.
 	*	Typically called when the user presses the left click.
 	*/
-	virtual void Fire();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void Fire() PURE_VIRTUAL(AWeapon::Fire,);
 
 	/**
 	*	Implementable method for the secondary fire functionality of the weapon or used to aim down iron-sights.
 	*	This action is typically called with the right click.
 	*/
-	virtual void SecondaryFire();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void SecondaryFire() PURE_VIRTUAL(AWeapon::SecondaryFire,);
 
-	UPROPERTY(BlueprintReadWrite, Category="Weapon Parent Class", meta = (DisplayName = "Weapon Mesh"))
+	UPROPERTY(BlueprintReadWrite, Category="Weapon", meta = (DisplayName = "Weapon Mesh"))
 	USkeletalMeshComponent* mMesh;		/**< Reference to the mesh of the gun. Currently being set by the derived blueprint class. */
 };

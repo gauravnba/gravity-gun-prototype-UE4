@@ -6,6 +6,10 @@
 #include "GameSingleton/GameSingleton.h"
 #include "Events/GlobalEventHandler.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
+
 AGravityGun::AGravityGun() :
 	mIsGravityActive(false), mGravitizedObject(nullptr)
 {
@@ -48,7 +52,10 @@ void AGravityGun::Fire()
 		mGravitizedObject = nullptr;
 	}
 
-	AGameSingleton::GetEventHandler()->OnLaunchObject.Broadcast(this);
+	// Spawn particle effect and sound at location.
+	FTransform particleTransform = mMesh->GetSocketTransform("Ammo");
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), mGravityGunLaunchObjectParticle, particleTransform.GetLocation(), particleTransform.Rotator(), particleTransform.GetScale3D());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), mGravityGunLaunchObjectSound, particleTransform.GetLocation());
 }
 
 void AGravityGun::SecondaryFire()
@@ -68,7 +75,11 @@ void AGravityGun::SecondaryFire()
 			Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(false);
 
 			mIsGravityActive = true;
-			AGameSingleton::GetEventHandler()->OnGravitizeObject.Broadcast(this);
+
+			// Spawn particle effect and sound at location.
+			FTransform particleTransform = mMesh->GetSocketTransform("Ammo");
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), mGravityGunGravitizeObjectSound, particleTransform.GetLocation());
+			mActiveParticle = UGameplayStatics::SpawnEmitterAttached(mGravityGunActiveParticle, mMesh, TEXT("Ammo"), particleTransform.GetLocation(), particleTransform.Rotator(), EAttachLocation::KeepWorldPosition, false);
 		}
 	}
 }
@@ -107,6 +118,8 @@ void AGravityGun::DropAttachedObject()
 		mGravitizedObject->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
 		Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(true);
 		mIsGravityActive = false;
-		AGameSingleton::GetEventHandler()->OnDropObject.Broadcast(this);
+
+		// Spawn particle effect and sound at location.
+		mActiveParticle->DestroyComponent();
 	}
 }
