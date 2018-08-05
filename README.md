@@ -1,4 +1,7 @@
 # Gravity Gun Test
+
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/-xHItnCfwwE/0.jpg)](http://www.youtube.com/watch?v=-xHItnCfwwE)
+
 ## Overview
 This project is primarily created for prototyping the gravity gun from Half Life 2 and testing it out in a range. The program is intended to be structured in an extensible manner. I have used Doxygen style comments wherever possible.
 The Gravity Gun is defined by the BP_GravityGun blueprint, which is derived from the AGravityGun C++ class. The AGravityGun class holds most of the logic that the involves the gameplay for the gun. The FXSystem, which includes particle effects and sounds has been decoupled and have their own class - AFXManager.
