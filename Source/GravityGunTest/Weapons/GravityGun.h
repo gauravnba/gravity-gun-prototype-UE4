@@ -84,4 +84,7 @@ protected:
 
 	UPROPERTY()
 	class UParticleSystemComponent* mActiveParticle;		/**< Reference to the gravitize particle being played. */
+
+private:
+	bool mDetectedFlag;
 };

@@ -11,7 +11,7 @@
 #include "Components/AudioComponent.h"
 
 AGravityGun::AGravityGun() :
-	mIsGravityActive(false), mGravitizedObject(nullptr)
+	mIsGravityActive(false), mGravitizedObject(nullptr), mDetectedFlag(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -31,6 +31,17 @@ void AGravityGun::Tick(float DeltaTime)
 	{
 		mGravitizedObject->SetWorldLocation(FMath::Lerp(mGravitizedObject->GetComponentLocation(), mMesh->GetSocketLocation("GravityFocus"), LEVITATE_TO_LERP_ALPHA));
 	}
+
+	if (!mDetectedFlag && DetectObject())
+	{
+		AGameSingleton::GetEventHandler()->OnObjectDetected.Broadcast();
+		mDetectedFlag = true;
+	}
+	else if (mDetectedFlag && !DetectObject())
+	{
+		AGameSingleton::GetEventHandler()->OnNoObjectDetected.Broadcast();
+		mDetectedFlag = false;
+	}
 }
 
 void AGravityGun::Fire()
@@ -40,10 +51,10 @@ void AGravityGun::Fire()
 	{
 		DropAttachedObject();
 	}
-	else
-	{
-		DetectObject();
-	}
+	//else
+	//{
+	//	DetectObject();
+	//}
 
 	// Apply Impulse to captured object.
 	if (mGravitizedObject)
@@ -105,6 +116,11 @@ bool AGravityGun::DetectObject()
 				return true;
 			}
 		}
+
+		if (mGravitizedObject)
+		{
+			mGravitizedObject = false;
+		}
 	}
 
 	return false;
@@ -112,7 +128,7 @@ bool AGravityGun::DetectObject()
 
 void AGravityGun::DropAttachedObject()
 {
-	if (mGravitizedObject)
+	if (mGravitizedObject && mIsGravityActive)
 	{
 		// Detach the object preserving the current world transform and turn the physics back on.
 		mGravitizedObject->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
