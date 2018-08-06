@@ -49,7 +49,7 @@ void AGravityGun::Fire()
 	// If the gravity is active (object is attached), drop it. Else detect if an object is in range.
 	if (mIsGravityActive)
 	{
-		DropAttachedObject();
+		DropObject();
 	}
 	//else
 	//{
@@ -74,12 +74,12 @@ void AGravityGun::SecondaryFire()
 	// If an object is attached, drop it. Else, detect an object in range and grab onto it.
 	if (mIsGravityActive)
 	{
-		DropAttachedObject();
+		DropObject();
 		mGravitizedObject = nullptr;
 	}
 	else
 	{
-		if (DetectObject())
+		if (mGravitizedObject)
 		{
 			// Attach the object keeping the world transform of the object and shut down physics on it.
 			mGravitizedObject->AttachToComponent(mMesh, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true), "GravityFocus");
@@ -126,7 +126,7 @@ bool AGravityGun::DetectObject()
 	return false;
 }
 
-void AGravityGun::DropAttachedObject()
+void AGravityGun::DropObject()
 {
 	if (mGravitizedObject && mIsGravityActive)
 	{

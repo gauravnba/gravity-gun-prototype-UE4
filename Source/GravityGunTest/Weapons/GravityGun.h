@@ -50,7 +50,7 @@ public:
 	*	Drops the attached object, if there is one. Also mutates the mIsGravityActive to false.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Gravity Gun")
-	void DropAttachedObject();
+	void DropObject();
 
 private:
 
