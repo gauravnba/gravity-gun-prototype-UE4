@@ -9,12 +9,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/AudioComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 AGravityGun::AGravityGun() :
 	mIsGravityActive(false), mGravitizedObject(nullptr), mDetectedFlag(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	mPhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("mPhysicsHandle"));
 }
 
 void AGravityGun::BeginPlay()
@@ -26,12 +28,13 @@ void AGravityGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// If an object is attached and is not at the focus of the gun, levitate it to the gun.
-	if (mIsGravityActive && (mGravitizedObject->GetComponentLocation() != mMesh->GetSocketLocation("GravityFocus")))
+	// Set the object's rotation and location every tick.
+	if (mIsGravityActive)
 	{
-		mGravitizedObject->SetWorldLocation(FMath::Lerp(mGravitizedObject->GetComponentLocation(), mMesh->GetSocketLocation("GravityFocus"), LEVITATE_TO_LERP_ALPHA));
+		mPhysicsHandle->SetTargetLocationAndRotation(mMesh->GetSocketLocation("GravityFocus"), mMesh->GetComponentRotation());
 	}
 
+	// Check if an object is detected and send relevant events to update the crosshair.
 	if (!mDetectedFlag && DetectObject())
 	{
 		AGameSingleton::GetEventHandler()->OnObjectDetected.Broadcast();
@@ -51,10 +54,6 @@ void AGravityGun::Fire()
 	{
 		DropObject();
 	}
-	//else
-	//{
-	//	DetectObject();
-	//}
 
 	// Apply Impulse to captured object.
 	if (mGravitizedObject)
@@ -82,9 +81,7 @@ void AGravityGun::SecondaryFire()
 		if (mGravitizedObject)
 		{
 			// Attach the object keeping the world transform of the object and shut down physics on it.
-			mGravitizedObject->AttachToComponent(mMesh, FAttachmentTransformRules(EAttachmentRule::KeepWorld, true), "GravityFocus");
-			Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(false);
-
+			mPhysicsHandle->GrabComponentAtLocationWithRotation(Cast<UPrimitiveComponent>(mGravitizedObject), TEXT(""), mGravitizedObject->GetComponentLocation(), FRotator(0.0f, 0.0f, 0.0f));
 			mIsGravityActive = true;
 
 			// Spawn particle effect and sound at location.
@@ -131,8 +128,7 @@ void AGravityGun::DropObject()
 	if (mGravitizedObject && mIsGravityActive)
 	{
 		// Detach the object preserving the current world transform and turn the physics back on.
-		mGravitizedObject->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
-		Cast<UPrimitiveComponent>(mGravitizedObject)->SetSimulatePhysics(true);
+		mPhysicsHandle->ReleaseComponent();
 		mIsGravityActive = false;
 
 		// Spawn particle effect and sound at location.

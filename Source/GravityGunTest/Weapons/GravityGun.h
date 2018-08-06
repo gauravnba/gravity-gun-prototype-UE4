@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -67,9 +65,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Gravity Gun Range"))
 	float GRAVITY_GUN_RANGE;								/**< The range that the gun can operate under. */
 
-	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta=(DisplayName="Levitate Lerp Alpha"))
-	float LEVITATE_TO_LERP_ALPHA;							/**< Holds the alpha value to use when interpolating a gravitized object's location. */
-
 	UPROPERTY(EditAnywhere, Category = "Gravity Gun", meta = (DisplayName = "Launch Object Particle Effect"))
 	class UParticleSystem* mGravityGunLaunchObjectParticle; /**< The particle effect reference to be played when object is launched. */
 
@@ -85,6 +80,8 @@ protected:
 	UPROPERTY()
 	class UParticleSystemComponent* mActiveParticle;		/**< Reference to the gravitize particle being played. */
 
+	UPROPERTY(BlueprintReadwrite, Category = "Gravity Gun")
+	class UPhysicsHandleComponent* mPhysicsHandle;
 private:
 	bool mDetectedFlag;
 };
